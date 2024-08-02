@@ -1,2 +1,6 @@
 .env
 db_data/**/*.*
+
+# The bicep file parameters
+*.parameters.json
+!*.parameters.json.sample

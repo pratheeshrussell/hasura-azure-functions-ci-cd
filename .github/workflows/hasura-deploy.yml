@@ -6,24 +6,46 @@ name: Deploy Hasura Project to cloud
 on: workflow_dispatch
 
 jobs:
-  deploy-hasura-cloud:
-    name: Sync Hasura Metadata and Migrations
+  build-azure-infra:
     runs-on: ubuntu-latest
-    environment: dev
     steps:
-      - name: 'Checkout GitHub Action'
-        uses: actions/checkout@v4
-      - name: Install Hasura CLI
-        run:  curl -L https://github.com/hasura/graphql-engine/raw/stable/cli/get.sh | bash
-        # version v2.40.0 is the latest version as of now just adding this line for consistency
-      - name: Update Hasura CLI
-        run: sudo hasura update-cli --version v2.40.0
-      - name: 'Create env file'
-        run: |
-          touch hasura-metadata/.env
-          echo "${{ secrets.HASURA_CLOUD_ENV }}" >> hasura-metadata/.env
-      - name: Update Metadata and Migrations
-        working-directory: hasura-metadata
-        run: |
-          hasura migrate apply --database-name "Test DB"
-          hasura metadata apply
+    - name: 'Checkout code'
+      uses: actions/checkout@main
+    - name: 'Create Parameters file'
+      id: create-json
+      uses: jsdaniell/create-json@v1.2.3
+      with:
+        name: "create-resource.parameters.json"
+        json: ${{ secrets.BICEP_PARAMETERS }}
+        dir: 'bicep/'
+    - uses: azure/login@v2
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+    - name: 'Deploy Function App Resources'
+      uses: azure/arm-deploy@v1
+      with:
+        subscriptionId: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+        resourceGroupName: ${{ secrets.AZURE_RG }}
+        parameters: bicep/create-resource.parameters.json
+        template: bicep/create-resource.bicep
+  # deploy-hasura-cloud:
+  #   name: Sync Hasura Metadata and Migrations
+  #   runs-on: ubuntu-latest
+  #   environment: dev
+  #   steps:
+  #     - name: 'Checkout GitHub Action'
+  #       uses: actions/checkout@v4
+  #     - name: Install Hasura CLI
+  #       run:  curl -L https://github.com/hasura/graphql-engine/raw/stable/cli/get.sh | bash
+  #       # version v2.40.0 is the latest version as of now just adding this line for consistency
+  #     - name: Update Hasura CLI
+  #       run: sudo hasura update-cli --version v2.40.0
+  #     - name: 'Create env file'
+  #       run: |
+  #         touch hasura-metadata/.env
+  #         echo "${{ secrets.HASURA_CLOUD_ENV }}" >> hasura-metadata/.env
+  #     - name: Update Metadata and Migrations
+  #       working-directory: hasura-metadata
+  #       run: |
+  #         hasura migrate apply --database-name "Test DB"
+  #         hasura metadata apply
