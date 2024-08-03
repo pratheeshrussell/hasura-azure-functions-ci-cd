@@ -15,14 +15,19 @@ param location string = resourceGroup().location
 // @description('Location for Application Insights')
 // param appInsightsLocation string
 
+@description('The language worker runtime to load in the function app.')
+@allowed([
+  'node'
+  'dotnet'
+  'java'
+])
+param runtime string = 'node'
 
-var runtime = 'node'
 var functionAppName = appName
 var hostingPlanName = appName
 // var applicationInsightsName = appName
 var storageAccountName = '${uniqueString(resourceGroup().id)}azfunctions'
 var functionWorkerRuntime = runtime
-
 
 resource storageAccount 'Microsoft.Storage/storageAccounts@2022-05-01' = {
   name: storageAccountName
@@ -40,22 +45,27 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2022-05-01' = {
 resource hostingPlan 'Microsoft.Web/serverfarms@2021-03-01' = {
   name: hostingPlanName
   location: location
+  kind: 'linux'
   sku: {
     name: 'Y1'
     tier: 'Dynamic'
   }
-  properties: {}
+  properties: {
+    reserved: true
+  }
 }
 
 resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
   name: functionAppName
   location: location
-  kind: 'functionapp'
+  kind: 'functionapp,linux'
   identity: {
     type: 'SystemAssigned'
   }
+  
   properties: {
     serverFarmId: hostingPlan.id
+    
     siteConfig: {
       appSettings: [
         {
@@ -78,14 +88,39 @@ resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
           name: 'WEBSITE_NODE_DEFAULT_VERSION'
           value: '~14'
         }
+        // {
+        //   name: 'APPINSIGHTS_INSTRUMENTATIONKEY'
+        //   value: applicationInsights.properties.InstrumentationKey
+        // }
         {
           name: 'FUNCTIONS_WORKER_RUNTIME'
           value: functionWorkerRuntime
         }
+       
+        {
+          name: 'linuxFxVersion'
+          value: functionWorkerRuntime
+        }
       ]
+      cors: {
+        allowedOrigins: [
+          '*'
+        ]
+      }
+      linuxFxVersion:'Node|20'
       ftpsState: 'FtpsOnly'
       minTlsVersion: '1.2'
     }
     httpsOnly: true
   }
 }
+
+// resource applicationInsights 'Microsoft.Insights/components@2020-02-02' = {
+//   name: applicationInsightsName
+//   location: appInsightsLocation
+//   kind: 'web'
+//   properties: {
+//     Application_Type: 'web'
+//     Request_Source: 'rest'
+//   }
+// }
