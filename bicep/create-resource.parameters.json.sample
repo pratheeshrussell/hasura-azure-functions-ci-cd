@@ -2,12 +2,11 @@
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-    "resourceGroupName": {
-      "value": "TestResourceGroup"
+    "appName":{
+        "value":"fnappFromGithubActions"
     },
-     "resourceGroupLocation": {
-      "value": "westus"
-    }
+   "location":{
+        "value":"southindia"
+      }
   }
 }
-
