@@ -4,3 +4,5 @@ db_data/**/*.*
 # The bicep file parameters
 *.parameters.json
 !*.parameters.json.sample
+
+bicep_template_backup/**/*.*

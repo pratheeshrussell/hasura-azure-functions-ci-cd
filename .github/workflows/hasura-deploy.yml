@@ -9,6 +9,8 @@ jobs:
   setup-azure-infra:
     name: Setup the required services for deployment
     runs-on: ubuntu-latest
+    outputs:
+      azureBicepAppName: ${{ steps.setupAzureResources.outputs.resourceAppName }}
     steps:
     - name: 'Checkout code'
       uses: actions/checkout@main
@@ -24,6 +26,7 @@ jobs:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
     - name: 'Deploy Function App Resources'
       uses: azure/arm-deploy@v1
+      id: setupAzureResources
       with:
         subscriptionId: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
         resourceGroupName: ${{ secrets.AZURE_RG }}
@@ -35,7 +38,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: setup-azure-infra
     env:
-      AZURE_FUNCTIONAPP_NAME: 'fnappFromGithubActions' # we set this from secret in last workflow   
+      AZURE_FUNCTIONAPP_NAME: ${{ needs.setup-azure-infra.outputs.azureBicepAppName }} # we set this from secret in last workflow   
       AZURE_FUNCTIONAPP_PACKAGE_PATH: 'az-functions' # the folder path
       NODE_VERSION: '20'                
     steps:
@@ -61,6 +64,9 @@ jobs:
       with:
         app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
         package: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
+    - name: 'Get Function App URL'
+      run: |
+        echo "Function App URL ->  ${{ steps.fa.outputs.app-url }}"
   # deploy-hasura-cloud:
   #   name: Sync Hasura Metadata and Migrations
   #   runs-on: ubuntu-latest

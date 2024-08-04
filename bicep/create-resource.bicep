@@ -29,6 +29,9 @@ var hostingPlanName = appName
 var storageAccountName = '${uniqueString(resourceGroup().id)}azfunctions'
 var functionWorkerRuntime = runtime
 
+// We can use this in github action in next job
+output resourceAppName string = appName
+
 resource storageAccount 'Microsoft.Storage/storageAccounts@2022-05-01' = {
   name: storageAccountName
   location: location
@@ -69,6 +72,15 @@ resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
     siteConfig: {
       appSettings: [
         {
+          name: 'FUNCTIONS_EXTENSION_VERSION'
+          value: '~4'
+        }
+        {
+          name: 'FUNCTIONS_WORKER_RUNTIME'
+          value: functionWorkerRuntime
+        }
+       
+        {
           name: 'AzureWebJobsStorage'
           value: 'DefaultEndpointsProtocol=https;AccountName=${storageAccountName};EndpointSuffix=${environment().suffixes.storage};AccountKey=${storageAccount.listKeys().keys[0].value}'
         }
@@ -76,31 +88,23 @@ resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
           name: 'WEBSITE_CONTENTAZUREFILECONNECTIONSTRING'
           value: 'DefaultEndpointsProtocol=https;AccountName=${storageAccountName};EndpointSuffix=${environment().suffixes.storage};AccountKey=${storageAccount.listKeys().keys[0].value}'
         }
-        {
-          name: 'WEBSITE_CONTENTSHARE'
-          value: toLower(functionAppName)
-        }
-        {
-          name: 'FUNCTIONS_EXTENSION_VERSION'
-          value: '~4'
-        }
-        {
-          name: 'WEBSITE_NODE_DEFAULT_VERSION'
-          value: '~14'
-        }
+
+        // {
+        //   name: 'WEBSITE_CONTENTSHARE'
+        //   value: toLower(functionAppName)
+        // }
+        // {
+        //   name: 'FUNCTIONS_EXTENSION_VERSION'
+        //   value: '~4'
+        // }
+        // {
+        //   name: 'WEBSITE_NODE_DEFAULT_VERSION'
+        //   value: '~14'
+        // }
         // {
         //   name: 'APPINSIGHTS_INSTRUMENTATIONKEY'
         //   value: applicationInsights.properties.InstrumentationKey
         // }
-        {
-          name: 'FUNCTIONS_WORKER_RUNTIME'
-          value: functionWorkerRuntime
-        }
-       
-        {
-          name: 'linuxFxVersion'
-          value: functionWorkerRuntime
-        }
       ]
       cors: {
         allowedOrigins: [
