@@ -64,6 +64,16 @@ jobs:
       with:
         app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
         package: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
+    - name: create production env files
+      uses: jsdaniell/create-json@v1.2.3
+      with:
+        name: "env-update.json"
+        json: ${{ secrets.AZURE_FUNCTION_APP_PRODUCTION_ENV }}
+        dir: 'az-functions/'
+    - name: Sync env files
+      run: |
+        cd az-functions
+        az functionapp config appsettings set --name ${{ env.AZURE_FUNCTIONAPP_NAME }} --resource-group ${{ secrets.AZURE_RG }} --settings "@env-update.json"
     - name: 'Get Function App URL'
       run: |
         echo "Function App URL ->  ${{ steps.fa.outputs.app-url }}"

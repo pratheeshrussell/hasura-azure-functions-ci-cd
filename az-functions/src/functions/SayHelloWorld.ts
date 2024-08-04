@@ -5,7 +5,13 @@ export async function SayHelloWorld(request: HttpRequest, context: InvocationCon
 
     const name = request.query.get('name') || await request.text() || 'world';
 
-    return { body: `Hello, ${name}!` };
+    return { 
+        jsonBody: {
+            "message":`Hello, ${name}!`,
+            "secret": process.env["secret_name"]
+        },
+        
+    };
 };
 
 app.http('SayHelloWorld', {
