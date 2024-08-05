@@ -77,25 +77,25 @@ jobs:
     - name: 'Get Function App URL'
       run: |
         echo "Function App URL ->  ${{ steps.fa.outputs.app-url }}"
-  # deploy-hasura-cloud:
-  #   name: Sync Hasura Metadata and Migrations
-  #   runs-on: ubuntu-latest
-  #   needs: deploy-azure-functions
-  #   environment: dev
-  #   steps:
-  #     - name: 'Checkout code'
-  #       uses: actions/checkout@main
-  #     - name: Install Hasura CLI
-  #       run:  curl -L https://github.com/hasura/graphql-engine/raw/stable/cli/get.sh | bash
-  #       # version v2.40.0 is the latest version as of now just adding this line for consistency
-  #     - name: Update Hasura CLI
-  #       run: sudo hasura update-cli --version v2.40.0
-  #     - name: 'Create env file'
-  #       run: |
-  #         touch hasura-metadata/.env
-  #         echo "${{ secrets.HASURA_CLOUD_ENV }}" >> hasura-metadata/.env
-  #     - name: Update Metadata and Migrations
-  #       working-directory: hasura-metadata
-  #       run: |
-  #         hasura migrate apply --database-name "Test DB"
-  #         hasura metadata apply
+  deploy-hasura-cloud:
+    name: Sync Hasura Metadata and Migrations
+    runs-on: ubuntu-latest
+    needs: deploy-azure-functions
+    environment: dev
+    steps:
+      - name: 'Checkout code'
+        uses: actions/checkout@main
+      - name: Install Hasura CLI
+        run:  curl -L https://github.com/hasura/graphql-engine/raw/stable/cli/get.sh | bash
+        # version v2.40.0 is the latest version as of now just adding this line for consistency
+      - name: Update Hasura CLI
+        run: sudo hasura update-cli --version v2.40.0
+      - name: 'Create env file'
+        run: |
+          touch hasura-metadata/.env
+          echo "${{ secrets.HASURA_CLOUD_ENV }}" >> hasura-metadata/.env
+      - name: Update Metadata and Migrations
+        working-directory: hasura-metadata
+        run: |
+          hasura migrate apply --database-name "Test DB"
+          hasura metadata apply

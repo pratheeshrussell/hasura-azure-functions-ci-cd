@@ -1,6 +1,13 @@
-actions: []
+actions:
+  - name: getGreetings
+    definition:
+      kind: ""
+      handler: '{{ACTION_BASE_URL}}/api/getGreetings'
+    comment: Get a greeting for user
 custom_types:
   enums: []
-  input_objects: []
-  objects: []
+  input_objects:
+    - name: GreetingInput
+  objects:
+    - name: GreetingOutput
   scalars: []

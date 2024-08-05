@@ -1,0 +1,14 @@
+type Query {
+  getGreetings(
+    username: String!
+  ): GreetingOutput
+}
+
+input GreetingInput {
+  username: String!
+}
+
+type GreetingOutput {
+  message: String!
+}
+
